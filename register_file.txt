@@ -1,0 +1,66 @@
+module register_file(
+    input clk,
+    input rst,
+    input decode,
+    input write_back,
+    input [3:0] opcode,
+    input [2:0] rs1_addr,
+    input [2:0] rs2_addr,
+    input [2:0] rd_addr,
+    input [7:0] rd_in, 
+    input [7:0] data_in,
+    output reg [7:0] rs1_out,
+    output reg [7:0] rs2_out,
+    output reg [7:0] reg_out
+    );
+    
+    reg [7:0] regs [0:7];
+    
+    always @ (*) begin
+    if (rst) begin
+         regs[0] <= 8'b0;
+         regs[1] <= 8'b0;
+         regs[2] <= 8'b0;
+         regs[3] <= 8'b0;
+         regs[4] <= 8'b0;
+         regs[5] <= 8'b0;
+         regs[6] <= 8'b0;
+         regs[7] <= 8'b0;
+    end
+    else if (write_back) begin
+        if(opcode == 4'b0000)
+             regs[rs1_addr] = data_in;
+        else
+             regs[rd_addr] <= rd_in;
+    end
+    else begin
+        regs[0] <= regs[0];
+        regs[1] <= regs[1];
+        regs[2] <= regs[2];
+        regs[3] <= regs[3];
+        regs[4] <= regs[4];
+        regs[5] <= regs[5];
+        regs[6] <= regs[6];
+        regs[7] <= regs[7];
+    end
+    end
+    
+    always @ (*) begin
+    if(rst) begin
+        rs1_out <= 0;
+        rs2_out <= 0;
+        reg_out <= 0;
+    end
+    else if (decode) begin
+        rs1_out <= regs[rs1_addr];
+        rs2_out <= regs[rs2_addr];
+        reg_out <= regs[rd_addr];
+    end
+    else begin
+        rs1_out <= rs1_out;
+        rs2_out <= rs2_out;
+        reg_out <= reg_out;
+    end
+    end
+    
+endmodule
