@@ -1,0 +1,117 @@
+module Control_unit(
+    input clk,
+    input rst,
+    input start,
+    output reg fetch,
+    output reg decode,
+    output reg execute,
+    output reg memory,
+    output reg write_back
+    );
+    
+    parameter idle = 3'b000;
+    parameter fetch_st = 3'b001;
+    parameter decode_st = 3'b010;
+    parameter execute_st = 3'b011;
+    parameter memory_st = 3'b100;
+    parameter wb_st = 3'b101;
+    
+    reg [2:0] p_s , n_s;
+    
+    always @ (posedge clk) begin
+    if(rst)
+        p_s <= idle;
+    else if (start)
+        p_s <= n_s;
+    else
+        p_s <= p_s;
+    end     
+    
+    always @ (*) begin
+    if (rst) 
+        n_s <= idle;
+    else begin
+        case(p_s)
+            idle: begin
+                 if(start)
+                      n_s <= fetch_st;
+                 else
+                      n_s <= idle;
+             end
+             fetch_st: n_s <= decode_st;
+             decode_st: n_s <= execute_st;
+             execute_st: n_s <= memory_st;
+             memory_st: n_s <= wb_st;       
+             wb_st: begin
+                     if(start)
+                        n_s <= fetch_st;
+                     else
+                        n_s <= idle;                
+             end
+        endcase
+    end
+    end
+    
+    always @ (posedge clk) begin
+    if(rst) begin
+        fetch <= 0;
+        decode <= 0;
+        execute <= 0; 
+        memory <= 0;
+        write_back <= 0;   
+    end
+    else begin
+       case(p_s) 
+          idle: begin
+              fetch <= 0;
+              decode <= 0;
+              execute <= 0; 
+              memory <= 0;
+              write_back <= 0;
+          end
+          fetch_st: begin
+             fetch <= 1;
+             decode <= 0;
+             execute <= 0; 
+             memory <= 0;
+             write_back <= 0;
+          end
+          decode_st: begin
+             fetch <= 0;
+             decode <= 1;
+             execute <= 0; 
+             memory <= 0;
+             write_back <= 0;
+          end
+          execute_st: begin
+             fetch <= 0;
+             decode <= 0;
+             execute <= 1; 
+             memory <= 0;
+             write_back <= 0;
+          end
+          memory_st: begin
+             fetch <= 0;
+             decode <= 0;
+             execute <= 0; 
+             memory <= 1;
+             write_back <= 0;
+          end
+          wb_st: begin
+             fetch <= 0;
+             decode <= 0;
+             execute <= 0; 
+             memory <= 0;
+             write_back <= 1;
+          end  
+          default: begin
+              fetch <= 0;
+              decode <= 0;
+              execute <= 0; 
+              memory <= 0;
+              write_back <= 0;
+          end  
+      endcase
+    end
+    end
+endmodule
