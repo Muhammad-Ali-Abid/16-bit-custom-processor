@@ -1,0 +1,24 @@
+module instruction_memory(
+    input clk,
+    input rst,
+    input fetch,
+    input [3:0] pc,
+    output reg [15:0] instr
+    );
+    
+    reg [15:0] mem [0:15];
+    
+    initial begin
+        $readmemb("address of instruction file" , mem);
+    end
+    
+    always @ (posedge clk) begin
+    if(rst)
+       instr <= 16'b0;
+    else if (fetch)
+       instr <= mem[pc];
+    else
+       instr <= instr;
+    end   
+    
+endmodule
