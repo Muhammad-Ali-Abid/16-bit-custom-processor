@@ -1,0 +1,97 @@
+module DesignTop(
+    input clk,
+    input rst,
+    input start
+    );
+    
+    wire fetch;
+    wire decode;
+    wire execute;
+    wire memory;
+    wire write_back;
+    wire [3:0] pc;
+    wire [15:0] instr;
+    wire [3:0] opcode;
+    wire [2:0] addr;
+    wire [7:0] data_out;
+    wire [7:0] data_in;
+    wire [7:0] op1;
+    wire [7:0] op2;
+    wire [5:0] immediate;
+    wire [7:0] result;
+    wire [2:0] rs1_addr;
+    wire [2:0] rs2_addr;
+    wire [2:0] rd_addr; 
+    
+    assign opcode = instr[3:0];
+    assign addr = instr[9:7];
+    assign immediate = instr[12:7];
+    assign rs1_addr = instr[6:4];
+    assign rs2_addr = instr[9:7];
+    assign rd_addr = instr[15:13];
+    
+    Control_unit c1 (
+        .clk(clk),
+        .rst(rst),
+        .start(start),
+        .fetch(fetch),
+        .decode(decode),
+        .execute(execute),
+        .memory(memory),
+        .write_back(write_back)
+    );
+    
+    program_counter p1 (
+        .clk(clk),
+        .rst(rst),
+        .fetch(fetch),
+        .pc(pc)
+    );
+    
+    instruction_memory i1(
+        .clk(clk),
+        .rst(rst),
+        .fetch(fetch),
+        .pc(pc),
+        .instr(instr)
+    );
+    
+    data_memory d1 (
+        .clk(clk),
+        .rst(rst),
+        .memory(memory),
+        .addr(addr),
+        .opcode(opcode),
+        .data_in(data_in),
+        .data_out(data_out)
+    );
+    
+    alu a1 (
+        .clk(clk),
+        .rst(rst),
+        .execute(execute),
+        .opcode(opcode),
+        .op1(op1),
+        .op2(op2),
+        .immediate(immediate),
+        .result(result)
+    );
+    
+    register_file r1 (
+        .clk(clk),
+        .rst(rst),
+        .decode(decode),
+        .write_back(write_back),
+        .opcode(opcode),
+        .rs1_addr(rs1_addr),
+        .rs2_addr(rs2_addr),
+        .rd_addr(rd_addr),
+        .rd_in(result),
+        .data_in(data_out),
+        .rs1_out(op1),
+        .rs2_out(op2),
+        .reg_out(data_in)
+        );
+    
+    
+endmodule
